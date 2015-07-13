@@ -1,0 +1,41 @@
+<!--
+  ~ Copyright 2015 Ideable Solutions, S.L.
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<resources>
+    <string name="app_name">FiwareAndroidApp</string>
+
+    <string name="title_section1">Get token</string>
+    <string name="title_section2">Create DeviceCheck Entity</string>
+    <string name="title_section3">Update DeviceCheck Entity</string>
+    <string name="title_section4">Update DeviceCheck Entity Attribute</string>
+    <string name="title_section5">Get DeviceCheck Entity</string>
+    <string name="title_section6">Get DeviceCheck Entity Attribute</string>
+    <string name="title_section7">Delete DeviceCheck Entity</string>
+
+    <string name="title_section8">Create HealthRecord Entity</string>
+    <string name="title_section9">Update HealthRecord Entity</string>
+    <string name="title_section10">Update HealthRecord Entity Attribute</string>
+    <string name="title_section11">Get HealthRecord Entity</string>
+    <string name="title_section12">Get HealthRecord Entity Attribute</string>
+    <string name="title_section13">Delete HealthRecord Entity</string>
+
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+
+    <string name="action_example">Example action</string>
+
+    <string name="action_settings">Settings</string>
+</resources>
