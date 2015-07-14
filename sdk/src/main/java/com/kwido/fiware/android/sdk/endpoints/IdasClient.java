@@ -17,13 +17,9 @@ package com.kwido.fiware.android.sdk.endpoints;
 
 import com.kwido.fiware.android.sdk.model.RegisterDeviceRequest;
 
+import com.kwido.fiware.android.sdk.utils.Constants;
 import retrofit.Callback;
-import retrofit.http.Body;
-import retrofit.http.DELETE;
-import retrofit.http.GET;
-import retrofit.http.POST;
-import retrofit.http.Path;
-import retrofit.http.Query;
+import retrofit.http.*;
 
 /**
  * IDAS client
@@ -42,13 +38,20 @@ public interface IdasClient {
     /**
      * Sends observations (measurements) for the given deviceId
      *
+     * @param fiwareService String Fiware Service: tenant
+     * @param fiwareServicePath String Fiware Service Path: subservice
      * @param apikey       String Idas API Key
      * @param deviceId     String DeviceId
      * @param measurements String. Example: temperature|36.1#weight|87.54
      * @param callback     Callback<Void>
      */
     @POST("/d")
-    void sendObservations(@Query("k") String apikey, @Query("i") String deviceId, @Body String measurements, Callback<Void> callback);
+    void sendObservations(@Header(Constants.HEADER_FIWARE_SERVICE) String fiwareService,
+                          @Header(Constants.HEADER_FIWARE_SERVICEPATH) String fiwareServicePath,
+                          @Query("k") String apikey,
+                          @Query("i") String deviceId,
+                          @Body String measurements,
+                          Callback<Void> callback);
 
     /**
      * Deletes device
