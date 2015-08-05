@@ -31,4 +31,5 @@ public class Config {
     public static final String FIWARE_IDAS_APIKEY = "4jggokgpepnvsb2uv4s40d59ov";
 
     public static final String URN_PREFIX = "kwido:";
+
 }

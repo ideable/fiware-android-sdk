@@ -30,24 +30,17 @@ public class ServiceGenerator {
     }
 
     public static <S> S createService(Class<S> serviceClass, String baseUrl) {
-        RestAdapter.Builder builder = new RestAdapter.Builder()
-                .setEndpoint(baseUrl)
-                .setConverter(new JacksonConverter())
-                .setLogLevel(RestAdapter.LogLevel.FULL)
-                .setClient(new OkClient(new OkHttpClient()));
-
-        RestAdapter adapter = builder.build();
-
-        return adapter.create(serviceClass);
+        return ServiceGenerator.createService(serviceClass, baseUrl, null);
     }
 
-    public static <S> S createService(Class<S> serviceClass, String baseUrl, final String token) {
+    public static <S> S createService(Class<S> serviceClass, String endpoint, final String token) {
         // set endpoint url and use OkHTTP as HTTP client
         RestAdapter.Builder builder = new RestAdapter.Builder()
-                .setEndpoint(baseUrl)
+                .setEndpoint(endpoint)
                 .setConverter(new JacksonConverter())
                 .setLogLevel(BuildConfig.DEBUG ? RestAdapter.LogLevel.FULL : RestAdapter.LogLevel.BASIC)
                 .setClient(new OkClient(new OkHttpClient()));
+
 
         builder.setRequestInterceptor(new RequestInterceptor() {
             @Override

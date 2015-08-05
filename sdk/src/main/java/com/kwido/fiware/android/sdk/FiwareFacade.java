@@ -36,104 +36,89 @@ import retrofit.client.Response;
  */
 public class FiwareFacade {
 
-    private static final String TAG = "FiwareFacade";
+    private static final String TAG = FiwareFacade.class.getSimpleName();
 
-    private static FiwareFacade instance;
+    private static final String LOG_DESTROY = "Destroy ImageLoader";
+    private static final String LOG_INIT_CONFIG = "Initialize FiwareFacade with configuration";
+    private static final String WARNING_RE_INIT_CONFIG = "Try to initialize FiwareFacade which had already been initialized before. " + "To re-init FiwareFacade with new configuration call FiwareFacade.destroy() at first.";
+    private static final String ERROR_INIT_CONFIG_WITH_NULL = "FiwareFacade configuration can not be initialized with null";
 
-    public static FiwareFacade getInstance(String orionBaseUrl, String idasBaseUrl, String cloudlabBaseUrl, String cloudlabUsername, String cloudlabPassword) {
+    private volatile static FiwareFacade instance;
+
+    /** Returns singleton class instance */
+    public static FiwareFacade getInstance() {
         if (instance == null) {
-            instance = new FiwareFacade(orionBaseUrl, idasBaseUrl, cloudlabBaseUrl, cloudlabUsername, cloudlabPassword);
+            synchronized (FiwareFacade.class) {
+                if (instance == null) {
+                    instance = new FiwareFacade();
+                }
+            }
         }
         return instance;
     }
-
-    /**
-     * Returns a new instance of FiwareFacade ant initializes Orion, Idas and CloudLab clients
-     * @param token String
-     * @return FiwareFacade instance
-     */
-    public static FiwareFacade getInstance(String orionBaseUrl, String idasBaseUrl, String cloudlabBaseUrl, String token) {
-        FiwareFacade newInstance = new FiwareFacade(orionBaseUrl, idasBaseUrl, cloudlabBaseUrl, token);
-
-        newInstance.orionClient = ServiceGenerator.createService(OrionClient.class, orionBaseUrl, newInstance.token, false);
-        newInstance.idasClient = ServiceGenerator.createService(IdasClient.class, idasBaseUrl, newInstance.token, true);
-        newInstance.cloudLabClient = ServiceGenerator.createService(CloudLabClient.class, cloudlabBaseUrl);
-
-        return newInstance;
-    }
-
-    private String token = null;
 
     private OrionClient orionClient = null;
     private IdasClient idasClient = null;
     private CloudLabClient cloudLabClient = null;
 
-    private String orionBaseUrl;
-    private String cloudlabBaseUrl;
-    private String idasBaseUrl;
+    private String token = null;
 
-    private String cloudlabUsername;
-    private String cloudlabPassword;
+    private FiwareConfiguration configuration;
 
-
-    private FiwareFacade(String orionBaseUrl, String idasBaseUrl, String cloudlabBaseUrl, String cloudlabUsername, String cloudlabPassword) {
-
-        this.orionBaseUrl = orionBaseUrl;
-        this.cloudlabBaseUrl = cloudlabBaseUrl;
-        this.idasBaseUrl = idasBaseUrl;
-        this.cloudlabUsername = cloudlabUsername;
-        this.cloudlabPassword = cloudlabPassword;
-
-        initFacade();
-
-    }
-
-    private FiwareFacade(String orionBaseUrl, String idasBaseUrl, String cloudlabBaseUrl, String cloudlabToken) {
-
-        this.orionBaseUrl = orionBaseUrl;
-        this.cloudlabBaseUrl = cloudlabBaseUrl;
-        this.idasBaseUrl = idasBaseUrl;
-
-        this.token = cloudlabToken;
-
-        initFacade();
-
+    protected FiwareFacade() {
     }
 
     /**
-     * Gets a new token and initializes Orion, Idas and CloudLab clients
+     * Initializes FiwareFacade instance with configuration.<br />
+     * If configurations was set before ( {@link #isInited()} == true) then this method does nothing.<br />
+     * To force initialization with new configuration you should {@linkplain #destroy() destroy FiwareFacade} at first.
+     *
+     * @param configuration {@linkplain FiwareConfiguration ImageLoader configuration}
+     * @throws IllegalArgumentException if <b>configuration</b> parameter is null
      */
-    private void initFacade(){
-        if(null == cloudLabClient){
-            cloudLabClient = ServiceGenerator.createService(CloudLabClient.class, cloudlabBaseUrl);
+    public synchronized void init(FiwareConfiguration configuration) {
+        if (configuration == null) {
+            throw new IllegalArgumentException(ERROR_INIT_CONFIG_WITH_NULL);
         }
+        if (!isInited()) {
+            Log.d(TAG, LOG_INIT_CONFIG);
 
-        if (token == null) {
+            // init clients
+            cloudLabClient = ServiceGenerator.createService(CloudLabClient.class, configuration.getCloudlabEndpoint());
+            orionClient = ServiceGenerator.createService(OrionClient.class, configuration.getOrionEndpoint(), configuration.getOrionAuthToken());
+            idasClient = ServiceGenerator.createService(IdasClient.class, configuration.getIdasEndpoint(), configuration.getIdasAuthToken());
 
-            cloudLabClient.getToken(TokenRequest.Builder.aTokenRequest()
-                    .withAuth(Auth.Builder.anAuth().withPasswordCredentials(PasswordCredentials.Builder.aPasswordCredentials()
-                            .withUsername(cloudlabUsername)
-                            .withPassword(cloudlabPassword)
-                            .build()).build())
-                    .build(), new Callback<TokenResponse>() {
-
-                @Override
-                public void success(TokenResponse tokenResponse, Response response) {
-                    Log.d(TAG, "getToken success " + tokenResponse);
-                    token = tokenResponse.getAccess().getToken().getId();
-                    orionClient = ServiceGenerator.createService(OrionClient.class, orionBaseUrl, token, false);
-                    idasClient = ServiceGenerator.createService(IdasClient.class, idasBaseUrl, token, true);
-                }
-
-                @Override
-                public void failure(RetrofitError error) {
-                    Log.d(TAG, "getToken failure " + error);
-                }
-            });
-
+            this.configuration = configuration;
+        } else {
+            Log.w(TAG, WARNING_RE_INIT_CONFIG);
         }
     }
 
+    /**
+     * Returns <b>true</b> - if FiwareFacade {@linkplain #init(FiwareConfiguration) is initialized with
+     * configuration}; <b>false</b> - otherwise
+     */
+    public boolean isInited() {
+        return configuration != null;
+    }
+
+    /**
+     * Clears current configuration. <br />
+     * You can {@linkplain #init(FiwareConfiguration) init} FiwareFacade with new configuration after calling this
+     * method.
+     */
+    public void destroy() {
+        if (isInited()) {
+            Log.d(TAG, LOG_DESTROY);
+        }
+
+        // Clear clients
+        orionClient = null;
+        idasClient = null;
+        cloudLabClient = null;
+
+        configuration = null;
+    }
 
 
     /**
@@ -141,10 +126,6 @@ public class FiwareFacade {
      * @return OrionClient
      */
     public OrionClient getOrionClient() {
-        if (orionClient == null) {
-            //orionClient = ServiceGenerator.createService(OrionClient.class, Constants.BASE_URL_ORION, "6d361980346942ae882f0632fe578cf1", false);
-            initFacade();
-        }
         return orionClient;
     }
 
@@ -153,10 +134,6 @@ public class FiwareFacade {
      * @return IdasClient
      */
     public IdasClient getIdasClient() {
-        if (idasClient == null) {
-            //idasClient = ServiceGenerator.createService(IdasClient.class, Constants.BASE_URL_IDAS, "6d361980346942ae882f0632fe578cf1", true);
-            initFacade();
-        }
         return idasClient;
     }
 
@@ -165,10 +142,6 @@ public class FiwareFacade {
      * @return
      */
     public CloudLabClient getCloudLabClient() {
-        if (cloudLabClient == null) {
-            //cloudLabClient = ServiceGenerator.createService(CloudLabClient.class, Constants.BASE_URL_CLOUDLAB);
-            initFacade();
-        }
         return cloudLabClient;
     }
 
