@@ -33,7 +33,10 @@ public interface IdasClient {
      * @param callback              Callback<Void>
      */
     @POST("/devices")
-    void registerDevice(@Body RegisterDeviceRequest registerDeviceRequest, Callback<Void> callback);
+    @Headers({"Content-Type: application/json"})
+    void registerDevice(@Header(Constants.HEADER_FIWARE_SERVICE) String fiwareService,
+                        @Header(Constants.HEADER_FIWARE_SERVICEPATH) String fiwareServicePath,
+                        @Body RegisterDeviceRequest registerDeviceRequest, Callback<Void> callback);
 
     /**
      * Sends observations (measurements) for the given deviceId
@@ -46,6 +49,7 @@ public interface IdasClient {
      * @param callback     Callback<Void>
      */
     @POST("/d")
+    @Headers({"Content-Type: text/plain"})
     void sendObservations(@Header(Constants.HEADER_FIWARE_SERVICE) String fiwareService,
                           @Header(Constants.HEADER_FIWARE_SERVICEPATH) String fiwareServicePath,
                           @Query("k") String apikey,

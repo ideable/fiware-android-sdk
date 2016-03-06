@@ -33,8 +33,5 @@ public class Constants {
 
     public static final String COLONS = ":";
 
-    public static final String FIWARE_SERVICE = "openiot";
-    public static final String FIWARE_SERVICEPATH = "/";
-
 
 }
